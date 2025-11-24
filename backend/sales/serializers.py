@@ -1,4 +1,5 @@
 from decimal import Decimal
+import json
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
@@ -93,10 +94,12 @@ class OpportunitySerializer(serializers.ModelSerializer):
             "stage",
             "inserted_date",
             "close_date",
+            "attachment",
             "created_at",
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at", "inserted_date"]
+        extra_kwargs = {"attachment": {"required": False, "allow_null": True}}
 
     def create(self, validated_data):
         if not validated_data.get("number"):
@@ -168,12 +171,16 @@ class OfferSerializer(serializers.ModelSerializer):
             "status",
             "total_amount",
             "notes",
+            "attachment",
             "items",
             "created_at",
             "updated_at",
         ]
         read_only_fields = ["id", "total_amount", "created_at", "updated_at"]
-        extra_kwargs = {"client": {"required": False}}
+        extra_kwargs = {
+            "client": {"required": False},
+            "attachment": {"required": False, "allow_null": True},
+        }
 
     def validate(self, attrs):
         # Offerta deve essere legata almeno a un'opportunità
@@ -194,8 +201,16 @@ class OfferSerializer(serializers.ModelSerializer):
         offer.total_amount = total
         offer.save(update_fields=["total_amount"])
 
+    def _normalize_items(self, items_data):
+        if isinstance(items_data, str):
+            try:
+                items_data = json.loads(items_data)
+            except json.JSONDecodeError:
+                raise serializers.ValidationError("Formato items non valido")
+        return items_data
+
     def create(self, validated_data):
-        items_data = validated_data.pop("items", [])
+        items_data = self._normalize_items(validated_data.pop("items", []))
         if not validated_data.get("number"):
             validated_data["number"] = _generate_number(Offer, "OFF")
         with transaction.atomic():
@@ -212,7 +227,8 @@ class OfferSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             instance.save()
             if items_data is not None:
-                self._replace_items(instance, items_data)
+                parsed_items = self._normalize_items(items_data)
+                self._replace_items(instance, parsed_items)
             self._update_total(instance)
         return instance
 
@@ -234,11 +250,16 @@ class SaleOrderSerializer(serializers.ModelSerializer):
             "status",
             "invoicing_date",
             "total_amount",
+            "attachment",
             "created_at",
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
-        extra_kwargs = {"total_amount": {"required": False}, "client": {"required": False}}
+        extra_kwargs = {
+            "total_amount": {"required": False},
+            "client": {"required": False},
+            "attachment": {"required": False, "allow_null": True},
+        }
 
     def validate(self, attrs):
         offer = attrs.get("from_offer")
@@ -273,11 +294,16 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "status",
             "total_amount",
             "payment_method",
+            "attachment",
             "created_at",
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
-        extra_kwargs = {"total_amount": {"required": False}, "client": {"required": False}}
+        extra_kwargs = {
+            "total_amount": {"required": False},
+            "client": {"required": False},
+            "attachment": {"required": False, "allow_null": True},
+        }
 
     def validate(self, attrs):
         order = attrs.get("order")
@@ -296,6 +322,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
 class ContractSerializer(serializers.ModelSerializer):
     client_name = serializers.CharField(source="client.name", read_only=True)
+    attachment = serializers.FileField(source="document_file", required=False, allow_null=True)
 
     class Meta:
         model = Contract
@@ -308,8 +335,9 @@ class ContractSerializer(serializers.ModelSerializer):
             "end_date",
             "value",
             "status",
-            "document_file",
+            "attachment",
             "created_at",
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+        extra_kwargs = {"attachment": {"required": False, "allow_null": True}}

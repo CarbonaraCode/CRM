@@ -1,14 +1,21 @@
 from decimal import Decimal
+import shutil
+import tempfile
+from django.conf import settings
+from django.test import override_settings
 from django.utils import timezone
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.files.storage import default_storage
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .models import Client, Opportunity, Offer, SaleOrder, Invoice
+from .models import Client, Opportunity, Offer, SaleOrder, Invoice, Contract
 
 
 API_BASE = "/api/sales"
 
 
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class SalesApiTests(APITestCase):
     def setUp(self):
         self.client_obj = Client.objects.create(name="Test Client", email="client@test.com")
@@ -19,6 +26,29 @@ class SalesApiTests(APITestCase):
         Offer.objects.all().delete()
         Opportunity.objects.all().delete()
         Client.objects.all().delete()
+
+    def _file(self, name="allegato.txt", content=b"demo"):
+        return SimpleUploadedFile(name, content, content_type="text/plain")
+
+    def _path_from_url(self, url):
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            return parsed.path or url
+        except Exception:
+            return url
+
+    def _storage_name(self, url):
+        path = self._path_from_url(url)
+        prefix = settings.MEDIA_URL
+        if prefix and path.startswith(prefix):
+            path = path[len(prefix):]
+        return path.lstrip('/')
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
     def test_opportunity_auto_numbers_and_sequence(self):
         url = f"{API_BASE}/opportunities/"
@@ -34,12 +64,17 @@ class SalesApiTests(APITestCase):
         self.assertNotEqual(first_num, second_num)
         self.assertTrue(second_num.endswith("002"))
 
-    def _create_opportunity(self):
-        return self.client.post(
+    def _create_opportunity(self, with_file=False):
+        payload = {"client": str(self.client_obj.id), "name": "Main Opp"}
+        if with_file:
+            payload["attachment"] = self._file("opp.txt")
+        resp = self.client.post(
             f"{API_BASE}/opportunities/",
-            {"client": str(self.client_obj.id), "name": "Main Opp"},
-            format="json",
-        ).data
+            payload,
+            format="multipart" if with_file else "json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        return resp.data
 
     def test_offer_requires_opportunity_and_sets_client_and_total(self):
         opp = self._create_opportunity()
@@ -111,6 +146,67 @@ class SalesApiTests(APITestCase):
         self.assertTrue(invoice["number"].startswith(f"INV-{timezone.now().year}-"))
         self.assertEqual(Decimal(invoice["total_amount"]), Decimal("120.00"))
         self.assertEqual(invoice["client"], order["client"])
+
+    def test_upload_attachments_on_sales_entities(self):
+        opp = self._create_opportunity(with_file=True)
+        self.assertIn("opp.txt", opp["attachment"])
+        self.assertTrue(default_storage.exists(self._storage_name(opp["attachment"])))
+
+        offer_resp = self.client.post(
+            f"{API_BASE}/offers/",
+            {
+                "opportunity": opp["id"],
+                "date": "2025-01-01",
+                "valid_until": "2025-01-31",
+                "attachment": self._file("offer.pdf"),
+            },
+            format="multipart",
+        )
+        self.assertEqual(offer_resp.status_code, status.HTTP_201_CREATED)
+        offer = offer_resp.data
+        self.assertIn("offer.pdf", offer["attachment"])
+        self.assertTrue(default_storage.exists(self._storage_name(offer["attachment"])))
+
+        order_resp = self.client.post(
+            f"{API_BASE}/orders/",
+            {"from_offer": offer["id"], "date": "2025-02-01", "attachment": self._file("order.docx")},
+            format="multipart",
+        )
+        self.assertEqual(order_resp.status_code, status.HTTP_201_CREATED)
+        order = order_resp.data
+        self.assertIn("order.docx", order["attachment"])
+        self.assertTrue(default_storage.exists(self._storage_name(order["attachment"])))
+
+        invoice_resp = self.client.post(
+            f"{API_BASE}/invoices/",
+            {
+                "order": order["id"],
+                "date": "2025-02-15",
+                "due_date": "2025-03-15",
+                "attachment": self._file("invoice.txt"),
+            },
+            format="multipart",
+        )
+        self.assertEqual(invoice_resp.status_code, status.HTTP_201_CREATED)
+        invoice = invoice_resp.data
+        self.assertIn("invoice.txt", invoice["attachment"])
+        self.assertTrue(default_storage.exists(self._storage_name(invoice["attachment"])))
+
+        contract_resp = self.client.post(
+            f"{API_BASE}/contracts/",
+            {
+                "client": str(self.client_obj.id),
+                "title": "Contratto Demo",
+                "start_date": "2025-01-01",
+                "end_date": "2025-12-31",
+                "attachment": self._file("contract.pdf"),
+            },
+            format="multipart",
+        )
+        self.assertEqual(contract_resp.status_code, status.HTTP_201_CREATED)
+        contract_url = contract_resp.data["attachment"]
+        self.assertIn("contract.pdf", contract_url)
+        self.assertTrue(default_storage.exists(self._storage_name(contract_url)))
 
     def test_missing_links_return_400(self):
         # Offer without opportunity

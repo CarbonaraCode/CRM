@@ -10,6 +10,28 @@ async function httpGet(path) {
   return res.json();
 }
 
+const buildBody = (payload = {}) => {
+  const hasFile = Object.values(payload).some((val) => val instanceof File);
+  if (!hasFile) {
+    return {
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    };
+  }
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (value instanceof File) {
+      formData.append(key, value);
+    } else if (typeof value === 'object') {
+      formData.append(key, JSON.stringify(value));
+    } else {
+      formData.append(key, value);
+    }
+  });
+  return { body: formData, headers: {} };
+};
+
 export async function fetchSalesData() {
   const endpoints = {
     clients: `${SALES_BASE}/clients/`,
@@ -32,10 +54,11 @@ export async function fetchSalesData() {
 }
 
 export async function createResource(resource, payload) {
+  const { body, headers } = buildBody(payload);
   const res = await fetch(`${SALES_BASE}/${resource}/`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    headers,
+    body,
   });
   if (!res.ok) {
     const text = await res.text();
@@ -45,10 +68,11 @@ export async function createResource(resource, payload) {
 }
 
 export async function updateResource(resource, id, payload) {
+  const { body, headers } = buildBody(payload);
   const res = await fetch(`${SALES_BASE}/${resource}/${id}/`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    headers,
+    body,
   });
   if (!res.ok) {
     const text = await res.text();

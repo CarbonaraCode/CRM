@@ -23,6 +23,37 @@ const Modal = ({ title, fields, values, onChange, onClose, onSubmit }) => {
                 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
             };
 
+            if (field.type === 'file') {
+              return (
+                <div key={field.name}>
+                  <label className="text-sm font-medium text-slate-700 mb-1 block" htmlFor={field.name}>
+                    {field.label}
+                  </label>
+                  <div className="space-y-2">
+                    <input
+                      id={field.name}
+                      name={field.name}
+                      type="file"
+                      accept={field.accept}
+                      onChange={(e) => onChange(field.name, e.target.files?.[0] || null)}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {field.existingUrl && (
+                      <a
+                        href={field.existingUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 text-sm underline"
+                      >
+                        Visualizza allegato corrente
+                      </a>
+                    )}
+                    {field.hint && <p className="text-xs text-slate-500">{field.hint}</p>}
+                  </div>
+                </div>
+              );
+            }
+
             if (field.type === 'select') {
               return (
                 <div key={field.name}>

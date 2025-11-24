@@ -67,6 +67,7 @@ class Opportunity(TimeStampedModel):
     stage = models.CharField(max_length=20, choices=Stage.choices, default=Stage.NEW)
     inserted_date = models.DateField(default=timezone.localdate)
     close_date = models.DateField(null=True, blank=True)
+    attachment = models.FileField(upload_to="opportunities/", null=True, blank=True)
 
     def __str__(self):
         return f"{self.number} - {self.client.name}"
@@ -95,6 +96,7 @@ class Offer(TimeStampedModel):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     notes = models.TextField(blank=True)
+    attachment = models.FileField(upload_to="offers/", null=True, blank=True)
 
     def __str__(self):
         return f"Offerta {self.number}"
@@ -131,6 +133,7 @@ class SaleOrder(TimeStampedModel):
     invoicing_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    attachment = models.FileField(upload_to="orders/", null=True, blank=True)
 
     def __str__(self):
         return f"Ordine {self.number}"
@@ -153,6 +156,7 @@ class Invoice(TimeStampedModel):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=100, blank=True)
+    attachment = models.FileField(upload_to="invoices/", null=True, blank=True)
 
     def __str__(self):
         return f"Fattura {self.number}"

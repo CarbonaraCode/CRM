@@ -2,6 +2,28 @@ import React from 'react';
 import { X } from 'lucide-react';
 
 const InfoModal = ({ title, data, onClose }) => {
+  const renderValue = (value) => {
+    if (value === null || value === undefined || value === '') return '-';
+    if (Array.isArray(value)) {
+      if (!value.length) return '-';
+      return value.map((item, idx) => (
+        <span key={idx} className="block">{renderValue(item)}</span>
+      ));
+    }
+    if (React.isValidElement(value)) return value;
+    if (typeof value === 'object') {
+      if (value.url) {
+        return (
+          <a href={value.url} target="_blank" rel="noreferrer" className="text-blue-600 underline">
+            {value.label || 'Apri allegato'}
+          </a>
+        );
+      }
+      return JSON.stringify(value);
+    }
+    return value;
+  };
+
   return (
     <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl border border-slate-200">
@@ -15,7 +37,7 @@ const InfoModal = ({ title, data, onClose }) => {
           {Object.entries(data || {}).map(([key, value]) => (
             <div key={key} className="flex flex-col">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{key}</span>
-              <span className="text-sm text-slate-800 break-words">{`${value ?? '-'}`}</span>
+              <span className="text-sm text-slate-800 break-words">{renderValue(value)}</span>
             </div>
           ))}
         </div>

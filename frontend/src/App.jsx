@@ -49,6 +49,18 @@ const formatCurrency = (value) => {
   return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(Number(value));
 };
 
+const mediaBaseUrl = () => {
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+  return apiBase.replace(/\/api\/?$/, '');
+};
+
+const resolveAttachmentUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  const base = mediaBaseUrl();
+  return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 function App() {
   const [activeModule, setActiveModule] = useState('dashboard');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -112,6 +124,15 @@ function App() {
     contracts: 'contracts',
   };
 
+  const attachmentField = (record = {}) => ({
+    name: 'attachment',
+    label: 'Allegato',
+    type: 'file',
+    accept: '.pdf,.txt,.doc,.docx',
+    hint: 'Carica PDF, TXT o Word.',
+    existingUrl: resolveAttachmentUrl(record?.attachment),
+  });
+
   const fieldDefinitions = {
     clients: (state) => [
       { name: 'name', label: 'Nome', type: 'text' },
@@ -135,7 +156,7 @@ function App() {
       { name: 'phone', label: 'Telefono', type: 'text' },
       { name: 'is_primary', label: 'Primario', type: 'checkbox' },
     ],
-    opportunities: (state) => [
+    opportunities: (state, record = {}) => [
       { name: 'client', label: 'Cliente', type: 'select', options: state.clients.map(c => ({ value: c.id, label: c.name })) },
       { name: 'name', label: 'Nome', type: 'text' },
       { name: 'description', label: 'Descrizione', type: 'text' },
@@ -148,8 +169,9 @@ function App() {
         { value: 'LOST', label: 'Chiusa Persa' },
       ], default: 'NEW' },
       { name: 'close_date', label: 'Data chiusura', type: 'date' },
+      attachmentField(record),
     ],
-    offers: (state) => [
+    offers: (state, record = {}) => [
       { name: 'opportunity', label: 'Opportunità', type: 'select', options: state.opportunities.map(o => ({ value: o.id, label: `${o.number || o.name} - ${o.client_name}` })) },
       { name: 'client', label: 'Cliente', type: 'select', options: state.clients.map(c => ({ value: c.id, label: c.name })) },
       { name: 'date', label: 'Data creazione', type: 'date' },
@@ -165,8 +187,9 @@ function App() {
         { value: 'REJECTED', label: 'Rifiutata' },
         { value: 'EXPIRED', label: 'Scaduta' },
       ], default: 'DRAFT' },
+      attachmentField(record),
     ],
-    orders: (state) => [
+    orders: (state, record = {}) => [
       { name: 'from_offer', label: 'Offerta', type: 'select', options: state.offers.map(o => ({ value: o.id, label: `${o.number} - ${o.client_name}` })) },
       { name: 'client', label: 'Cliente', type: 'select', options: state.clients.map(c => ({ value: c.id, label: c.name })) },
       { name: 'date', label: 'Data', type: 'date' },
@@ -178,8 +201,9 @@ function App() {
         { value: 'DELIVERED', label: 'Consegnato' },
         { value: 'CANCELLED', label: 'Annullato' },
       ], default: 'PENDING' },
+      attachmentField(record),
     ],
-    invoices: (state) => [
+    invoices: (state, record = {}) => [
       { name: 'order', label: 'Ordine', type: 'select', options: state.orders.map(o => ({ value: o.id, label: `${o.number} - ${o.client_name}` })) },
       { name: 'client', label: 'Cliente', type: 'select', options: state.clients.map(c => ({ value: c.id, label: c.name })) },
       { name: 'date', label: 'Data', type: 'date' },
@@ -192,8 +216,9 @@ function App() {
         { value: 'OVERDUE', label: 'Scaduta' },
         { value: 'CANCELLED', label: 'Annullata' },
       ], default: 'DRAFT' },
+      attachmentField(record),
     ],
-    contracts: (state) => [
+    contracts: (state, record = {}) => [
       { name: 'client', label: 'Cliente', type: 'select', options: state.clients.map(c => ({ value: c.id, label: c.name })) },
       { name: 'title', label: 'Titolo', type: 'text' },
       { name: 'start_date', label: 'Data inizio', type: 'date' },
@@ -205,14 +230,17 @@ function App() {
         { value: 'RENEWED', label: 'Rinnovato' },
         { value: 'TERMINATED', label: 'Terminato' },
       ], default: 'ACTIVE' },
+      attachmentField(record),
     ],
   };
 
   const openModal = (mode, type, record = {}) => {
-    const fields = fieldDefinitions[type] ? fieldDefinitions[type](data) : [];
+    const fields = fieldDefinitions[type] ? fieldDefinitions[type](data, record) : [];
     const initial = {};
     fields.forEach((f) => {
-      if (record && record[f.name] !== undefined) {
+      if (f.type === 'file') {
+        initial[f.name] = null;
+      } else if (record && record[f.name] !== undefined) {
         initial[f.name] = record[f.name] ?? '';
       } else if (f.default !== undefined) {
         initial[f.name] = f.default;
@@ -271,6 +299,11 @@ function App() {
     }
   };
 
+  const attachmentValue = (fileUrl) => {
+    const resolved = resolveAttachmentUrl(fileUrl);
+    return resolved ? { url: resolved, label: 'Apri allegato' } : '-';
+  };
+
   const openDetail = (type, record) => {
     const dataMap = {
       opportunities: {
@@ -281,25 +314,63 @@ function App() {
         Stadio: record.stage,
         'Data inserimento': record.inserted_date,
         'Data chiusura': record.close_date,
+        Allegato: attachmentValue(record.attachment),
       },
       offers: {
         Numero: record.number,
         Cliente: record.client_name,
-        Opportunità: record.opportunity_name,
+        Opportunita: record.opportunity_name,
         Descrizione: record.description,
         Stato: record.status,
         'Data creazione': record.date,
         'Data emissione': record.issued_date,
         'Data accettazione': record.accepted_date,
-        'Validità': record.valid_until,
+        Validita: record.valid_until,
         Tipologia: record.type,
         Totale: formatCurrency(record.total_amount),
+        Allegato: attachmentValue(record.attachment),
+      },
+      orders: {
+        Numero: record.number,
+        Cliente: record.client_name,
+        'Da Offerta': record.offer_number || '-',
+        Stato: record.status,
+        Totale: formatCurrency(record.total_amount),
+        Data: record.date,
+        'Data fatturazione': record.invoicing_date || '-',
+        Allegato: attachmentValue(record.attachment),
+      },
+      invoices: {
+        Numero: record.number,
+        Cliente: record.client_name,
+        Ordine: record.order_number || '-',
+        Stato: record.status,
+        Totale: formatCurrency(record.total_amount),
+        Emissione: record.date,
+        Scadenza: record.due_date,
+        Pagamento: record.payment_method,
+        Allegato: attachmentValue(record.attachment),
+      },
+      contracts: {
+        Titolo: record.title,
+        Cliente: record.client_name,
+        Periodo: `${record.start_date} -> ${record.end_date}`,
+        Valore: formatCurrency(record.value),
+        Stato: record.status,
+        Allegato: attachmentValue(record.attachment),
       },
     };
     if (!dataMap[type]) return;
-    setDetail({ title: type === 'offers' ? 'Dettaglio Offerta' : 'Dettaglio Opportunità', data: dataMap[type] });
+    const titles = {
+      opportunities: 'Dettaglio Opportunita',
+      offers: 'Dettaglio Offerta',
+      orders: 'Dettaglio Ordine',
+      invoices: 'Dettaglio Fattura',
+      contracts: 'Dettaglio Contratto',
+    };
+    setDetail({ title: titles[type] || 'Dettaglio', data: dataMap[type] });
   };
-  
+
   const renderContent = () => {
     switch (activeModule) {
       case 'dashboard':
@@ -345,7 +416,6 @@ function App() {
             { header: 'Stadio', accessor: 'stage', render: r => badge(r.stage, 'indigo') },
             { header: 'Data inserimento', accessor: 'inserted_date' },
             { header: 'Data chiusura', accessor: 'close_date' },
-            { header: 'Descrizione', accessor: 'description' },
           ]}
           data={data.opportunities}
           onAdd={() => handleAdd('opportunities')}
@@ -375,7 +445,7 @@ function App() {
         return <DataTable 
           title="Ordini di Vendita" 
           columns={[
-            { header: 'Numero', accessor: 'number' },
+            { header: 'Numero', accessor: 'number', render: r => <button className="text-blue-600 underline" onClick={() => openDetail('orders', r)}>{r.number}</button> },
             { header: 'Cliente', accessor: 'client_name' },
             { header: 'Da Offerta', accessor: 'offer_number', render: r => r.offer_number || '-' },
             { header: 'Stato', accessor: 'status', render: r => badge(r.status, 'blue') },
@@ -392,7 +462,7 @@ function App() {
         return <DataTable 
           title="Fatture" 
           columns={[
-            { header: 'Numero', accessor: 'number' },
+            { header: 'Numero', accessor: 'number', render: r => <button className="text-blue-600 underline" onClick={() => openDetail('invoices', r)}>{r.number}</button> },
             { header: 'Cliente', accessor: 'client_name' },
             { header: 'Ordine', accessor: 'order_number', render: r => r.order_number || '-' },
             { header: 'Stato', accessor: 'status', render: r => badge(r.status, 'emerald') },
@@ -408,9 +478,9 @@ function App() {
         return <DataTable 
           title="Contratti" 
           columns={[
-            { header: 'Titolo', accessor: 'title' },
+            { header: 'Titolo', accessor: 'title', render: r => <button className="text-blue-600 underline" onClick={() => openDetail('contracts', r)}>{r.title}</button> },
             { header: 'Cliente', accessor: 'client_name' },
-            { header: 'Periodo', accessor: 'start_date', render: r => `${r.start_date} → ${r.end_date}` },
+            { header: 'Periodo', accessor: 'start_date', render: r => `${r.start_date} -> ${r.end_date}` },
             { header: 'Valore', accessor: 'value', render: r => formatCurrency(r.value) },
             { header: 'Stato', accessor: 'status', render: r => badge(r.status, 'purple') },
           ]}
