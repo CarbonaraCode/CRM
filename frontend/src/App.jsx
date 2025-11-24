@@ -10,15 +10,15 @@ import { fetchSalesData, createResource, updateResource, deleteResource } from '
 // Stato iniziale con stats fittizie in attesa di un endpoint dedicato
 const INITIAL_DATA = {
   stats: {
-    revenue: 125000,
-    orders: 45,
-    tickets: 12,
-    stockValue: 54000
+    revenue: 0,
+    orders: 0,
+    tickets: 0,
+    stockValue: 0
   },
   clients: [],
   contacts: [],
-    opportunities: [],
-    offers: [],
+  opportunities: [],
+  offers: [],
   orders: [],
   invoices: [],
   contracts: [],
@@ -63,12 +63,24 @@ function App() {
     loadSalesData();
   }, []);
 
+  const computeStats = (salesData) => {
+    const revenue = (salesData.invoices || []).reduce(
+      (sum, inv) => sum + Number(inv.total_amount || 0),
+      0
+    );
+    const ordersCount = (salesData.orders || []).length;
+    const tickets = 0; // placeholder until ticket endpoint exists
+    const stockValue = 0; // placeholder until inventory endpoint exists
+    return { revenue, orders: ordersCount, tickets, stockValue };
+  };
+
   const loadSalesData = async () => {
     setLoading(true);
     setError(null);
     try {
       const salesData = await fetchSalesData();
-      setData((prev) => ({ ...prev, ...salesData }));
+      const stats = computeStats(salesData);
+      setData((prev) => ({ ...prev, ...salesData, stats }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -353,7 +365,6 @@ function App() {
             { header: 'Emissione', accessor: 'issued_date' },
             { header: 'Accettazione', accessor: 'accepted_date' },
             { header: 'Tipologia', accessor: 'type' },
-            { header: 'Descrizione', accessor: 'description' },
           ]}
           data={data.offers}
           onAdd={() => handleAdd('offers')}

@@ -10,7 +10,7 @@ vi.mock('./services/api', () => {
       opportunities: [{ id: 'o1', number: 'OPP-2025-001', name: 'Upgrade', description: 'Desc', client: 'c1', client_name: 'Rossi S.r.l.' }],
       offers: [{ id: 'off1', number: 'OFF-2025-001', client: 'c1', client_name: 'Rossi S.r.l.', status: 'SENT', description: 'Off desc' }],
       orders: [{ id: 'ord1', number: 'ORD-2025-050', client: 'c1', client_name: 'Rossi S.r.l.' }],
-      invoices: [{ id: 'inv1', number: 'INV-2025-100', client: 'c1', client_name: 'Rossi S.r.l.' }],
+      invoices: [{ id: 'inv1', number: 'INV-2025-100', client: 'c1', client_name: 'Rossi S.r.l.', total_amount: 100 }],
       contracts: [],
     }),
     createResource: vi.fn().mockResolvedValue({}),
