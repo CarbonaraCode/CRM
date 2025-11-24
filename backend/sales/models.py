@@ -63,6 +63,7 @@ class Opportunity(TimeStampedModel):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="opportunities")
     number = models.CharField(max_length=50, unique=True, null=True, blank=True)  # Es. OPP-2024-001
     name = models.CharField(max_length=255, verbose_name="Nome Opportunita")
+    description = models.TextField(blank=True)
     stage = models.CharField(max_length=20, choices=Stage.choices, default=Stage.NEW)
     inserted_date = models.DateField(default=timezone.localdate)
     close_date = models.DateField(null=True, blank=True)
@@ -86,6 +87,7 @@ class Offer(TimeStampedModel):
         Opportunity, on_delete=models.SET_NULL, null=True, blank=True, related_name="offers"
     )
     date = models.DateField()  # data creazione
+    description = models.TextField(blank=True)
     issued_date = models.DateField(null=True, blank=True)
     accepted_date = models.DateField(null=True, blank=True)
     valid_until = models.DateField()

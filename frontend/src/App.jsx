@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import DataTable from './components/DataTable';
 import Modal from './components/Modal';
+import InfoModal from './components/InfoModal';
 import { fetchSalesData, createResource, updateResource, deleteResource } from './services/api';
 
 // Stato iniziale con stats fittizie in attesa di un endpoint dedicato
@@ -16,8 +17,8 @@ const INITIAL_DATA = {
   },
   clients: [],
   contacts: [],
-  opportunities: [],
-  offers: [],
+    opportunities: [],
+    offers: [],
   orders: [],
   invoices: [],
   contracts: [],
@@ -56,6 +57,7 @@ function App() {
   const [error, setError] = useState(null);
   const [modal, setModal] = useState(null);
   const [formValues, setFormValues] = useState({});
+  const [detail, setDetail] = useState(null);
 
   useEffect(() => {
     loadSalesData();
@@ -124,6 +126,7 @@ function App() {
     opportunities: (state) => [
       { name: 'client', label: 'Cliente', type: 'select', options: state.clients.map(c => ({ value: c.id, label: c.name })) },
       { name: 'name', label: 'Nome', type: 'text' },
+      { name: 'description', label: 'Descrizione', type: 'text' },
       { name: 'stage', label: 'Stadio', type: 'select', options: [
         { value: 'NEW', label: 'Nuova' },
         { value: 'QUALIFICATION', label: 'Qualificazione' },
@@ -138,6 +141,7 @@ function App() {
       { name: 'opportunity', label: 'Opportunità', type: 'select', options: state.opportunities.map(o => ({ value: o.id, label: `${o.number || o.name} - ${o.client_name}` })) },
       { name: 'client', label: 'Cliente', type: 'select', options: state.clients.map(c => ({ value: c.id, label: c.name })) },
       { name: 'date', label: 'Data creazione', type: 'date' },
+      { name: 'description', label: 'Descrizione', type: 'text' },
       { name: 'issued_date', label: 'Data emissione', type: 'date' },
       { name: 'accepted_date', label: 'Data accettazione', type: 'date' },
       { name: 'valid_until', label: 'Validità', type: 'date' },
@@ -254,6 +258,35 @@ function App() {
       alert(`Errore eliminazione: ${err.message}`);
     }
   };
+
+  const openDetail = (type, record) => {
+    const dataMap = {
+      opportunities: {
+        Numero: record.number,
+        Nome: record.name,
+        Descrizione: record.description,
+        Cliente: record.client_name,
+        Stadio: record.stage,
+        'Data inserimento': record.inserted_date,
+        'Data chiusura': record.close_date,
+      },
+      offers: {
+        Numero: record.number,
+        Cliente: record.client_name,
+        Opportunità: record.opportunity_name,
+        Descrizione: record.description,
+        Stato: record.status,
+        'Data creazione': record.date,
+        'Data emissione': record.issued_date,
+        'Data accettazione': record.accepted_date,
+        'Validità': record.valid_until,
+        Tipologia: record.type,
+        Totale: formatCurrency(record.total_amount),
+      },
+    };
+    if (!dataMap[type]) return;
+    setDetail({ title: type === 'offers' ? 'Dettaglio Offerta' : 'Dettaglio Opportunità', data: dataMap[type] });
+  };
   
   const renderContent = () => {
     switch (activeModule) {
@@ -294,12 +327,13 @@ function App() {
         return <DataTable 
           title="Opportunità" 
           columns={[
-            { header: 'Numero', accessor: 'number' },
+            { header: 'Numero', accessor: 'number', render: r => <button className="text-blue-600 underline" onClick={() => openDetail('opportunities', r)}>{r.number}</button> },
             { header: 'Nome', accessor: 'name' },
             { header: 'Cliente', accessor: 'client_name' },
             { header: 'Stadio', accessor: 'stage', render: r => badge(r.stage, 'indigo') },
             { header: 'Data inserimento', accessor: 'inserted_date' },
             { header: 'Data chiusura', accessor: 'close_date' },
+            { header: 'Descrizione', accessor: 'description' },
           ]}
           data={data.opportunities}
           onAdd={() => handleAdd('opportunities')}
@@ -310,7 +344,7 @@ function App() {
         return <DataTable 
           title="Offerte" 
           columns={[
-            { header: 'Numero', accessor: 'number' },
+            { header: 'Numero', accessor: 'number', render: r => <button className="text-blue-600 underline" onClick={() => openDetail('offers', r)}>{r.number}</button> },
             { header: 'Cliente', accessor: 'client_name' },
             { header: 'Opportunità', accessor: 'opportunity_name', render: r => r.opportunity_name || '-' },
             { header: 'Stato', accessor: 'status', render: r => badge(r.status, 'amber') },
@@ -319,6 +353,7 @@ function App() {
             { header: 'Emissione', accessor: 'issued_date' },
             { header: 'Accettazione', accessor: 'accepted_date' },
             { header: 'Tipologia', accessor: 'type' },
+            { header: 'Descrizione', accessor: 'description' },
           ]}
           data={data.offers}
           onAdd={() => handleAdd('offers')}
@@ -445,6 +480,13 @@ function App() {
                 onChange={(name, value) => setFormValues((prev) => ({ ...prev, [name]: value }))}
                 onClose={() => setModal(null)}
                 onSubmit={submitModal}
+              />
+            )}
+            {detail && (
+              <InfoModal
+                title={detail.title}
+                data={detail.data}
+                onClose={() => setDetail(null)}
               />
             )}
           </div>

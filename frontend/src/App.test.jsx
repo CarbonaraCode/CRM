@@ -7,8 +7,8 @@ vi.mock('./services/api', () => {
     fetchSalesData: vi.fn().mockResolvedValue({
       clients: [{ id: 'c1', name: 'Rossi S.r.l.', email: 'info@rossi.it', vat_number: '123' }],
       contacts: [],
-      opportunities: [{ id: 'o1', number: 'OPP-2025-001', name: 'Upgrade', client: 'c1', client_name: 'Rossi S.r.l.' }],
-      offers: [{ id: 'off1', number: 'OFF-2025-001', client: 'c1', client_name: 'Rossi S.r.l.', status: 'SENT' }],
+      opportunities: [{ id: 'o1', number: 'OPP-2025-001', name: 'Upgrade', description: 'Desc', client: 'c1', client_name: 'Rossi S.r.l.' }],
+      offers: [{ id: 'off1', number: 'OFF-2025-001', client: 'c1', client_name: 'Rossi S.r.l.', status: 'SENT', description: 'Off desc' }],
       orders: [{ id: 'ord1', number: 'ORD-2025-050', client: 'c1', client_name: 'Rossi S.r.l.' }],
       invoices: [{ id: 'inv1', number: 'INV-2025-100', client: 'c1', client_name: 'Rossi S.r.l.' }],
       contracts: [],
