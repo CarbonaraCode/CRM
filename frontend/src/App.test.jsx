@@ -78,4 +78,13 @@ describe('App', () => {
     expect(await screen.findByText('ACME')).toBeInTheDocument();
     expect(await screen.findByText('IT999')).toBeInTheDocument();
   });
+
+  it('renders invoice builder with line items controls', async () => {
+    render(<App />);
+    const invoiceButtons = await screen.findAllByText(/^Fatture$/);
+    fireEvent.click(invoiceButtons[0]);
+    fireEvent.click(screen.getByText('Nuovo'));
+    expect(await screen.findByText('Linee fattura')).toBeInTheDocument();
+    expect(await screen.findByText('Aggiungi riga')).toBeInTheDocument();
+  });
 });

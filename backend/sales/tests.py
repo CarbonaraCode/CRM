@@ -208,6 +208,43 @@ class SalesApiTests(APITestCase):
         self.assertIn("contract.pdf", contract_url)
         self.assertTrue(default_storage.exists(self._storage_name(contract_url)))
 
+    def test_invoice_items_and_pdf(self):
+        opp = self._create_opportunity()
+        offer = self.client.post(
+            f"{API_BASE}/offers/",
+            {
+                "opportunity": opp["id"],
+                "date": "2025-01-01",
+                "valid_until": "2025-01-31",
+                "items": [{"product_code": "X", "description": "Prod", "quantity": 1, "unit_price": "50.00", "discount": "0"}],
+            },
+            format="json",
+        ).data
+        order = self.client.post(
+            f"{API_BASE}/orders/",
+            {"from_offer": offer["id"], "date": "2025-02-01"},
+            format="json",
+        ).data
+        inv_payload = {
+            "order": order["id"],
+            "date": "2025-02-10",
+            "due_date": "2025-03-10",
+            "items": [
+                {"product": "Prod1", "description": "Desc1", "quantity": 2, "unit_price": "10.00", "tax_rate": "5.00"},
+                {"product": "Prod2", "description": "Desc2", "quantity": 1, "unit_price": "30.00", "tax_rate": "20.00"},
+            ],
+            "terms_and_conditions": "Pagamento a 30gg",
+        }
+        resp = self.client.post(f"{API_BASE}/invoices/", inv_payload, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        inv = resp.data
+        self.assertEqual(len(inv["items"]), 2)
+        self.assertEqual(Decimal(inv["total_amount"]), Decimal("50.00"))
+
+        pdf_resp = self.client.get(f"{API_BASE}/invoices/{inv['id']}/pdf/")
+        self.assertEqual(pdf_resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(pdf_resp["Content-Type"], "application/pdf")
+
     def test_missing_links_return_400(self):
         # Offer without opportunity
         resp_offer = self.client.post(

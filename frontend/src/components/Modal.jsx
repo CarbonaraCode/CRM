@@ -86,6 +86,79 @@ const Modal = ({ title, fields, values, onChange, onClose, onSubmit }) => {
               );
             }
 
+            if (field.type === 'items') {
+              const lines = Array.isArray(values[field.name]) ? values[field.name] : [];
+              const updateLine = (idx, key, val) => {
+                const copy = lines.map((l, i) => (i === idx ? { ...l, [key]: val } : l));
+                onChange(field.name, copy);
+              };
+              const addLine = () => onChange(field.name, [...lines, { product: '', description: '', quantity: 1, unit_price: 0, tax_rate: 0 }]);
+              const removeLine = (idx) => {
+                const copy = lines.filter((_, i) => i !== idx);
+                onChange(field.name, copy);
+              };
+              const subtotal = lines.reduce((sum, l) => sum + Number(l.quantity || 0) * Number(l.unit_price || 0), 0);
+              const tax = lines.reduce((sum, l) => sum + Number(l.quantity || 0) * Number(l.unit_price || 0) * (Number(l.tax_rate || 0) / 100), 0);
+              return (
+                <div key={field.name} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-slate-700">{field.label}</label>
+                    <button type="button" onClick={addLine} className="text-blue-600 text-sm underline">Aggiungi riga</button>
+                  </div>
+                  <div className="border border-slate-200 rounded-lg overflow-hidden">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          <th className="px-3 py-2 text-left">Prodotto</th>
+                          <th className="px-3 py-2 text-left">Descrizione</th>
+                          <th className="px-3 py-2 text-right">Q.tà</th>
+                          <th className="px-3 py-2 text-right">Prezzo</th>
+                          <th className="px-3 py-2 text-right">IVA %</th>
+                          <th className="px-3 py-2 text-right">Totale</th>
+                          <th className="px-3 py-2"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {lines.length ? lines.map((line, idx) => (
+                          <tr key={idx} className="border-t border-slate-200">
+                            <td className="px-3 py-2"><input className="w-full border border-slate-200 rounded px-2 py-1" value={line.product} onChange={(e) => updateLine(idx, 'product', e.target.value)} /></td>
+                            <td className="px-3 py-2"><input className="w-full border border-slate-200 rounded px-2 py-1" value={line.description} onChange={(e) => updateLine(idx, 'description', e.target.value)} /></td>
+                            <td className="px-3 py-2 text-right"><input type="number" step="0.01" className="w-20 text-right border border-slate-200 rounded px-2 py-1" value={line.quantity} onChange={(e) => updateLine(idx, 'quantity', Number(e.target.value))} /></td>
+                            <td className="px-3 py-2 text-right"><input type="number" step="0.01" className="w-24 text-right border border-slate-200 rounded px-2 py-1" value={line.unit_price} onChange={(e) => updateLine(idx, 'unit_price', Number(e.target.value))} /></td>
+                            <td className="px-3 py-2 text-right"><input type="number" step="0.01" className="w-20 text-right border border-slate-200 rounded px-2 py-1" value={line.tax_rate} onChange={(e) => updateLine(idx, 'tax_rate', Number(e.target.value))} /></td>
+                            <td className="px-3 py-2 text-right">{(Number(line.quantity || 0) * Number(line.unit_price || 0)).toFixed(2)}</td>
+                            <td className="px-3 py-2 text-right"><button type="button" onClick={() => removeLine(idx)} className="text-red-500">✕</button></td>
+                          </tr>
+                        )) : (
+                          <tr><td className="px-3 py-2 text-center text-slate-500" colSpan={7}>Nessuna riga</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex justify-end gap-4 text-sm text-slate-700">
+                    <span>Subtotale: {subtotal.toFixed(2)}</span>
+                    <span>IVA: {tax.toFixed(2)}</span>
+                    <span>Totale: {(subtotal).toFixed(2)}</span>
+                  </div>
+                </div>
+              );
+            }
+
+            if (field.type === 'textarea') {
+              return (
+                <div key={field.name}>
+                  <label className="text-sm font-medium text-slate-700 mb-1 block" htmlFor={field.name}>
+                    {field.label}
+                  </label>
+                  <textarea
+                    {...common}
+                    rows={4}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              );
+            }
+
             return (
               <div key={field.name}>
                 <label className="text-sm font-medium text-slate-700 mb-1 block" htmlFor={field.name}>

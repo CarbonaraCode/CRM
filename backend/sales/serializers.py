@@ -12,6 +12,7 @@ from .models import (
     OfferItem,
     SaleOrder,
     Invoice,
+    InvoiceLine,
     Contract,
 )
 
@@ -318,6 +319,116 @@ class InvoiceSerializer(serializers.ModelSerializer):
         if not validated_data.get("number"):
             validated_data["number"] = _generate_number(Invoice, "INV")
         return super().create(validated_data)
+
+
+class InvoiceLineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InvoiceLine
+        fields = ["id", "product", "description", "quantity", "unit_price", "tax_rate", "total_line"]
+        read_only_fields = ["id", "total_line"]
+
+
+class InvoiceSerializer(serializers.ModelSerializer):  # override with line items support
+    client_name = serializers.CharField(source="client.name", read_only=True)
+    order_number = serializers.CharField(source="order.number", read_only=True)
+    items = InvoiceLineSerializer(many=True, required=False)
+
+    class Meta:
+        model = Invoice
+        fields = [
+            "id",
+            "number",
+            "client",
+            "client_name",
+            "order",
+            "order_number",
+            "date",
+            "due_date",
+            "status",
+            "total_amount",
+            "payment_method",
+            "terms_and_conditions",
+            "attachment",
+            "items",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+        extra_kwargs = {
+            "total_amount": {"required": False},
+            "client": {"required": False},
+            "attachment": {"required": False, "allow_null": True},
+            "terms_and_conditions": {"required": False},
+        }
+
+    def validate(self, attrs):
+        order = attrs.get("order")
+        if not order and not attrs.get("client"):
+            raise serializers.ValidationError("order o client obbligatorio per creare una fattura.")
+        if order:
+            attrs.setdefault("client", order.client)
+            if not attrs.get("total_amount"):
+                attrs["total_amount"] = order.total_amount
+        return attrs
+
+    def _normalize_items(self, items_data):
+        if isinstance(items_data, str):
+            try:
+                items_data = json.loads(items_data)
+            except json.JSONDecodeError:
+                raise serializers.ValidationError("Formato items non valido")
+        return items_data
+
+    def _replace_items(self, invoice: Invoice, items_data):
+        invoice.items.all().delete()
+        InvoiceLine.objects.bulk_create(
+            [
+                InvoiceLine(
+                    invoice=invoice,
+                    product=item.get("product", ""),
+                    description=item.get("description", ""),
+                    quantity=item.get("quantity", 1),
+                    unit_price=item.get("unit_price", 0),
+                    tax_rate=item.get("tax_rate", 0),
+                )
+                for item in items_data or []
+            ]
+        )
+
+    def _update_total(self, invoice: Invoice):
+        total = sum((item.total_line for item in invoice.items.all()), Decimal("0"))
+        invoice.total_amount = total
+        invoice.save(update_fields=["total_amount"])
+
+    def get_items(self, obj):
+        return InvoiceLineSerializer(obj.items.all(), many=True).data
+
+    def create(self, validated_data):
+        items_data = validated_data.pop("items", [])
+        items_data = self._normalize_items(items_data)
+        if not validated_data.get("number"):
+            validated_data["number"] = _generate_number(Invoice, "INV")
+        with transaction.atomic():
+            invoice = Invoice.objects.create(**validated_data)
+            if items_data:
+                self._replace_items(invoice, items_data)
+                self._update_total(invoice)
+        return invoice
+
+    def update(self, instance, validated_data):
+        items_data = validated_data.pop("items", None)
+        if items_data is not None:
+            items_data = self._normalize_items(items_data)
+        if not validated_data.get("number") and not instance.number:
+            validated_data["number"] = _generate_number(Invoice, "INV")
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        with transaction.atomic():
+            instance.save()
+            if items_data is not None:
+                self._replace_items(instance, items_data)
+                self._update_total(instance)
+        return instance
 
 
 class ContractSerializer(serializers.ModelSerializer):

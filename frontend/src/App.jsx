@@ -64,6 +64,11 @@ const resolveAttachmentUrl = (url) => {
   return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
+const invoicePdfUrl = (id) => {
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+  return `${apiBase}/sales/invoices/${id}/pdf/`;
+};
+
 function App() {
   const [activeModule, setActiveModule] = useState('dashboard');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -230,6 +235,8 @@ function App() {
         { value: 'OVERDUE', label: 'Scaduta' },
         { value: 'CANCELLED', label: 'Annullata' },
       ], default: 'DRAFT' },
+      { name: 'items', label: 'Linee fattura', type: 'items' },
+      { name: 'terms_and_conditions', label: 'Termini e condizioni', type: 'textarea' },
       attachmentField(record),
     ],
     contracts: (state, record = {}) => [
@@ -290,6 +297,8 @@ function App() {
     fields.forEach((f) => {
       if (f.type === 'file') {
         initial[f.name] = null;
+      } else if (f.type === 'items') {
+        initial[f.name] = record.items || [];
       } else if (record && record[f.name] !== undefined) {
         initial[f.name] = record[f.name] ?? '';
       } else if (f.default !== undefined) {
@@ -403,6 +412,7 @@ function App() {
         Scadenza: record.due_date,
         Pagamento: record.payment_method,
         Allegato: attachmentValue(record.attachment),
+        PDF: record.id ? { url: invoicePdfUrl(record.id), label: 'Scarica PDF' } : '-',
       },
       contracts: {
         Titolo: record.title,
