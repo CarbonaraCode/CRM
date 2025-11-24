@@ -20,3 +20,10 @@
 - Updated models/serializers/UI fields: removed probability/expected_value, added inserted_date/close_date to opportunities; added issued/accepted dates, type to offers; added invoicing_date to orders; optional address on clients already present.
 - Added backend edit/delete coverage (patch/delete clients, offers, opportunities) and frontend edit/delete actions with API helpers; DataTable now supports edit/delete buttons; tests remain green.
 - Backend tests now explicitly clean up created objects in `tearDown` to avoid lingering data if run outside the isolated test DB.
+- Implemented attachment support across opportunities/offers/orders/invoices/contracts (model fields, serializers, migration) and exposed upload fields in the frontend create/edit modals with detail views showing download links.
+- Served media files via Django `MEDIA_URL` `/media/` and static helper to fix 404s when opening attachments; frontend now resolves relative URLs against backend host.
+- Removed `Descrizione` column from opportunities table while keeping description visible in detail modal; added detail modals for orders/invoices/contracts with clickable entries.
+- Added backend upload tests ensuring stored files exist for each entity; updated frontend tests for attachment links and removed column.
+- Cleaned frontend dependencies by removing Windows-specific Rollup pin and reinstalling under WSL; Vitest suite and Vite build now pass; `manage.sh start/status` brings frontend up correctly.
+- Added Acquisti backend API (suppliers, purchase orders, purchase invoices with attachment) with serializers, viewsets, URLs, migrations, and tests enforcing supplier/order links and upload handling.
+- Connected Acquisti frontend modules (suppliers, purchase orders/invoices) to new API with forms, tables, detail modals, and purchase-aware create/edit/delete flows; expanded tests and kept builds green.

@@ -5,7 +5,7 @@ import Dashboard from './pages/Dashboard';
 import DataTable from './components/DataTable';
 import Modal from './components/Modal';
 import InfoModal from './components/InfoModal';
-import { fetchSalesData, createResource, updateResource, deleteResource } from './services/api';
+import { fetchSalesData, fetchPurchaseData, createResource, updateResource, deleteResource, createPurchaseResource, updatePurchaseResource, deletePurchaseResource } from './services/api';
 
 // Stato iniziale con stats fittizie in attesa di un endpoint dedicato
 const INITIAL_DATA = {
@@ -22,6 +22,9 @@ const INITIAL_DATA = {
   orders: [],
   invoices: [],
   contracts: [],
+  suppliers: [],
+  purchaseOrders: [],
+  purchaseInvoices: [],
   products: [],
   tickets: []
 };
@@ -72,7 +75,7 @@ function App() {
   const [detail, setDetail] = useState(null);
 
   useEffect(() => {
-    loadSalesData();
+    loadAllData();
   }, []);
 
   const computeStats = (salesData) => {
@@ -86,13 +89,20 @@ function App() {
     return { revenue, orders: ordersCount, tickets, stockValue };
   };
 
-  const loadSalesData = async () => {
+  const loadAllData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const salesData = await fetchSalesData();
+      const [salesData, purchaseData] = await Promise.all([fetchSalesData(), fetchPurchaseData()]);
       const stats = computeStats(salesData);
-      setData((prev) => ({ ...prev, ...salesData, stats }));
+      setData((prev) => ({
+        ...prev,
+        ...salesData,
+        suppliers: purchaseData.suppliers || [],
+        purchaseOrders: purchaseData.orders || [],
+        purchaseInvoices: purchaseData.invoices || [],
+        stats,
+      }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -122,7 +132,11 @@ function App() {
     orders: 'orders',
     invoices: 'invoices',
     contracts: 'contracts',
+    suppliers: 'suppliers',
+    orders_purchase: 'orders',
+    invoices_purchase: 'invoices',
   };
+  const isPurchaseType = (type) => ['suppliers', 'orders_purchase', 'invoices_purchase'].includes(type);
 
   const attachmentField = (record = {}) => ({
     name: 'attachment',
@@ -232,6 +246,42 @@ function App() {
       ], default: 'ACTIVE' },
       attachmentField(record),
     ],
+    suppliers: () => [
+      { name: 'name', label: 'Nome', type: 'text' },
+      { name: 'vat_number', label: 'P.IVA', type: 'text' },
+      { name: 'email', label: 'Email', type: 'email' },
+      { name: 'phone', label: 'Telefono', type: 'text' },
+      { name: 'address', label: 'Indirizzo', type: 'text' },
+      { name: 'payment_terms', label: 'Termini di pagamento', type: 'text' },
+    ],
+    orders_purchase: (state, record = {}) => [
+      { name: 'number', label: 'Numero', type: 'text' },
+      { name: 'supplier', label: 'Fornitore', type: 'select', options: state.suppliers.map(s => ({ value: s.id, label: s.name })) },
+      { name: 'date', label: 'Data', type: 'date' },
+      { name: 'status', label: 'Stato', type: 'select', options: [
+        { value: 'DRAFT', label: 'Bozza' },
+        { value: 'SENT', label: 'Inviato' },
+        { value: 'RECEIVED', label: 'Merce Ricevuta' },
+        { value: 'COMPLETED', label: 'Completato' },
+        { value: 'CANCELLED', label: 'Annullato' },
+      ], default: 'DRAFT' },
+      { name: 'total_amount', label: 'Totale', type: 'number' },
+      { name: 'notes', label: 'Note', type: 'text' },
+    ],
+    invoices_purchase: (state, record = {}) => [
+      { name: 'number', label: 'Numero', type: 'text' },
+      { name: 'supplier', label: 'Fornitore', type: 'select', options: state.suppliers.map(s => ({ value: s.id, label: s.name })) },
+      { name: 'order', label: 'Ordine', type: 'select', options: state.purchaseOrders.map(o => ({ value: o.id, label: `${o.number} - ${o.supplier_name}` })) },
+      { name: 'date', label: 'Data', type: 'date' },
+      { name: 'due_date', label: 'Scadenza', type: 'date' },
+      { name: 'total_amount', label: 'Totale', type: 'number' },
+      { name: 'status', label: 'Stato', type: 'select', options: [
+        { value: 'RECEIVED', label: 'Ricevuta' },
+        { value: 'PAID', label: 'Pagata' },
+        { value: 'OVERDUE', label: 'Scaduta' },
+      ], default: 'RECEIVED' },
+      attachmentField(record),
+    ],
   };
 
   const openModal = (mode, type, record = {}) => {
@@ -260,11 +310,19 @@ function App() {
     );
     try {
       if (modal.mode === 'create') {
-        await createResource(resource, payload);
+        if (isPurchaseType(modal.type)) {
+          await createPurchaseResource(resource, payload);
+        } else {
+          await createResource(resource, payload);
+        }
       } else if (modal.mode === 'edit' && modal.record?.id) {
-        await updateResource(resource, modal.record.id, payload);
+        if (isPurchaseType(modal.type)) {
+          await updatePurchaseResource(resource, modal.record.id, payload);
+        } else {
+          await updateResource(resource, modal.record.id, payload);
+        }
       }
-      await loadSalesData();
+      await loadAllData();
       alert('Operazione completata');
       setModal(null);
     } catch (err) {
@@ -279,20 +337,15 @@ function App() {
   const handleDelete = async (type, row) => {
     const confirmDelete = confirm('Eliminare elemento?');
     if (!confirmDelete) return;
-    const mapping = {
-      clients: 'clients',
-      contacts: 'contacts',
-      opportunities: 'opportunities',
-      offers: 'offers',
-      orders: 'orders',
-      invoices: 'invoices',
-      contracts: 'contracts',
-    };
-    const resource = mapping[type];
+    const resource = resourceMap[type];
     if (!resource) return;
     try {
-      await deleteResource(resource, row.id);
-      await loadSalesData();
+      if (isPurchaseType(type)) {
+        await deletePurchaseResource(resource, row.id);
+      } else {
+        await deleteResource(resource, row.id);
+      }
+      await loadAllData();
       alert('Eliminato con successo');
     } catch (err) {
       alert(`Errore eliminazione: ${err.message}`);
@@ -359,6 +412,24 @@ function App() {
         Stato: record.status,
         Allegato: attachmentValue(record.attachment),
       },
+      purchase_orders: {
+        Numero: record.number,
+        Fornitore: record.supplier_name,
+        Data: record.date,
+        Stato: record.status,
+        Totale: formatCurrency(record.total_amount),
+        Note: record.notes || '-',
+      },
+      purchase_invoices: {
+        Numero: record.number,
+        Fornitore: record.supplier_name,
+        Ordine: record.order_number || '-',
+        Data: record.date,
+        Scadenza: record.due_date,
+        Totale: formatCurrency(record.total_amount),
+        Stato: record.status,
+        Allegato: attachmentValue(record.attachment),
+      },
     };
     if (!dataMap[type]) return;
     const titles = {
@@ -367,6 +438,8 @@ function App() {
       orders: 'Dettaglio Ordine',
       invoices: 'Dettaglio Fattura',
       contracts: 'Dettaglio Contratto',
+      purchase_orders: 'Dettaglio Ordine Acquisto',
+      purchase_invoices: 'Dettaglio Fattura Acquisto',
     };
     setDetail({ title: titles[type] || 'Dettaglio', data: dataMap[type] });
   };
@@ -473,6 +546,52 @@ function App() {
           onAdd={() => handleAdd('invoices')}
           onEdit={(row) => handleEdit('invoices', row)}
           onDelete={(row) => handleDelete('invoices', row)}
+        />;
+      case 'suppliers':
+        return <DataTable 
+          title="Fornitori" 
+          columns={[
+            { header: 'Nome', accessor: 'name' },
+            { header: 'P.IVA', accessor: 'vat_number' },
+            { header: 'Email', accessor: 'email' },
+            { header: 'Telefono', accessor: 'phone' },
+            { header: 'Termini Pagamento', accessor: 'payment_terms' },
+          ]}
+          data={data.suppliers}
+          onAdd={() => handleAdd('suppliers')}
+          onEdit={(row) => handleEdit('suppliers', row)}
+          onDelete={(row) => handleDelete('suppliers', row)}
+        />;
+      case 'orders_purchase':
+        return <DataTable 
+          title="Ordini di Acquisto" 
+          columns={[
+            { header: 'Numero', accessor: 'number', render: r => <button className="text-blue-600 underline" onClick={() => openDetail('purchase_orders', r)}>{r.number}</button> },
+            { header: 'Fornitore', accessor: 'supplier_name' },
+            { header: 'Stato', accessor: 'status' },
+            { header: 'Totale', accessor: 'total_amount', render: r => formatCurrency(r.total_amount) },
+            { header: 'Data', accessor: 'date' },
+          ]}
+          data={data.purchaseOrders}
+          onAdd={() => handleAdd('orders_purchase')}
+          onEdit={(row) => handleEdit('orders_purchase', row)}
+          onDelete={(row) => handleDelete('orders_purchase', row)}
+        />;
+      case 'invoices_purchase':
+        return <DataTable 
+          title="Fatture di Acquisto" 
+          columns={[
+            { header: 'Numero', accessor: 'number', render: r => <button className="text-blue-600 underline" onClick={() => openDetail('purchase_invoices', r)}>{r.number}</button> },
+            { header: 'Fornitore', accessor: 'supplier_name' },
+            { header: 'Ordine', accessor: 'order_number', render: r => r.order_number || '-' },
+            { header: 'Stato', accessor: 'status' },
+            { header: 'Totale', accessor: 'total_amount', render: r => formatCurrency(r.total_amount) },
+            { header: 'Scadenza', accessor: 'due_date' },
+          ]}
+          data={data.purchaseInvoices}
+          onAdd={() => handleAdd('invoices_purchase')}
+          onEdit={(row) => handleEdit('invoices_purchase', row)}
+          onDelete={(row) => handleDelete('invoices_purchase', row)}
         />;
       case 'contracts':
         return <DataTable 

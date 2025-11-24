@@ -1,5 +1,6 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const SALES_BASE = `${API_BASE}/sales`;
+const PURCHASE_BASE = `${API_BASE}/purchase`;
 
 async function httpGet(path) {
   const res = await fetch(path);
@@ -53,6 +54,21 @@ export async function fetchSalesData() {
   return Object.fromEntries(results);
 }
 
+export async function fetchPurchaseData() {
+  const endpoints = {
+    suppliers: `${PURCHASE_BASE}/suppliers/`,
+    orders: `${PURCHASE_BASE}/orders/`,
+    invoices: `${PURCHASE_BASE}/invoices/`,
+  };
+  const results = await Promise.all(
+    Object.entries(endpoints).map(async ([key, url]) => {
+      const data = await httpGet(url);
+      return [key, data];
+    })
+  );
+  return Object.fromEntries(results);
+}
+
 export async function createResource(resource, payload) {
   const { body, headers } = buildBody(payload);
   const res = await fetch(`${SALES_BASE}/${resource}/`, {
@@ -86,5 +102,41 @@ export async function deleteResource(resource, id) {
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`DELETE /${resource}/${id} failed: ${res.status} ${text}`);
+  }
+}
+
+export async function createPurchaseResource(resource, payload) {
+  const { body, headers } = buildBody(payload);
+  const res = await fetch(`${PURCHASE_BASE}/${resource}/`, {
+    method: 'POST',
+    headers,
+    body,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`POST /purchase/${resource} failed: ${res.status} ${text}`);
+  }
+  return res.json();
+}
+
+export async function updatePurchaseResource(resource, id, payload) {
+  const { body, headers } = buildBody(payload);
+  const res = await fetch(`${PURCHASE_BASE}/${resource}/${id}/`, {
+    method: 'PATCH',
+    headers,
+    body,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`PATCH /purchase/${resource}/${id} failed: ${res.status} ${text}`);
+  }
+  return res.json();
+}
+
+export async function deletePurchaseResource(resource, id) {
+  const res = await fetch(`${PURCHASE_BASE}/${resource}/${id}/`, { method: 'DELETE' });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`DELETE /purchase/${resource}/${id} failed: ${res.status} ${text}`);
   }
 }

@@ -7,6 +7,7 @@ urlpatterns = [
     # Rotta per il pannello di amministrazione
     path('admin/', admin.site.urls),
     path('api/sales/', include('sales.urls')),
+    path('api/purchase/', include('purchase.urls')),
 ]
 
 if settings.DEBUG:
