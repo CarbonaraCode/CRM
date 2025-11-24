@@ -30,4 +30,11 @@ describe('App', () => {
     expect(await screen.findByText('Rossi S.r.l.')).toBeInTheDocument();
     expect(await screen.findByText('info@rossi.it')).toBeInTheDocument();
   });
+
+  it('loads dashboard stats from invoices/orders data', async () => {
+    render(<App />);
+    const cardTitle = await screen.findByText('Fatturato Mensile');
+    const cardContainer = cardTitle.closest('div');
+    expect(cardContainer?.textContent).toMatch(/100/);
+  });
 });

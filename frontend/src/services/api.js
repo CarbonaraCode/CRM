@@ -1,6 +1,4 @@
-const API_BASE =
-  import.meta.env.VITE_API_URL ||
-  (typeof window !== 'undefined' ? `${window.location.origin}/api` : 'http://localhost:8000/api');
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const SALES_BASE = `${API_BASE}/sales`;
 
 async function httpGet(path) {
