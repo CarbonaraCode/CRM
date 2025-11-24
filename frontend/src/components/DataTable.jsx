@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Plus, MoreVertical, Trash2 } from 'lucide-react';
 
-const DataTable = ({ title, columns, data, onAdd, onDelete }) => {
+const DataTable = ({ title, columns, data, onAdd, onDelete, onEdit }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Safe check for data
@@ -56,8 +56,12 @@ const DataTable = ({ title, columns, data, onAdd, onDelete }) => {
                     </td>
                   ))}
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-slate-400 hover:text-blue-600 mr-3"><MoreVertical size={16}/></button>
-                    {onDelete && <button onClick={() => onDelete(row.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>}
+                    {onEdit && (
+                      <button onClick={() => onEdit(row)} className="text-slate-400 hover:text-blue-600 mr-3">
+                        <MoreVertical size={16}/>
+                      </button>
+                    )}
+                    {onDelete && <button onClick={() => onDelete(row)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>}
                   </td>
                 </tr>
               ))

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Colori per l'output
 GREEN='\033[0;32m'
@@ -13,12 +14,11 @@ function start() {
     echo -e "${GREEN}Avvio del sistema Nexus CRM...${NC}"
 
     # 1. Avvio Backend
-    if [ -d "backend/venv" ]; then
-        source backend/venv/bin/activate
-    else
+    if [ ! -d "backend/venv" ]; then
         echo -e "${RED}Virtual environment non trovato in backend/venv!${NC}"
         exit 1
     fi
+    source backend/venv/bin/activate
 
     echo -e "${YELLOW}Avvio Backend (Django) su port 8000...${NC}"
     # Usa python -u per forzare l'output non bufferizzato (fix log vuoti)

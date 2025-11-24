@@ -2,8 +2,9 @@
 > nexus-crm-frontend@0.0.0 dev
 > vite
 
+Re-optimizing dependencies because lockfile has changed
 
-  VITE v5.4.21  ready in 810 ms
+  VITE v5.4.21  ready in 12210 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose

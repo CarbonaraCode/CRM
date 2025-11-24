@@ -1,18 +1,42 @@
 Watching for file changes with StatReloader
-[24/Nov/2025 03:13:16] "GET / HTTP/1.1" 200 12120
-Not Found: /favicon.ico
-[24/Nov/2025 03:13:16] "GET /favicon.ico HTTP/1.1" 404 2211
-[24/Nov/2025 03:13:20] "GET /admin HTTP/1.1" 301 0
-[24/Nov/2025 03:13:20] "GET /admin/ HTTP/1.1" 302 0
-[24/Nov/2025 03:13:21] "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4198
-[24/Nov/2025 03:13:21] "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2808
-[24/Nov/2025 03:13:21] "GET /static/admin/css/base.css HTTP/1.1" 200 22120
-[24/Nov/2025 03:13:21] "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
-[24/Nov/2025 03:13:21] "GET /static/admin/css/login.css HTTP/1.1" 200 951
-[24/Nov/2025 03:13:21] "GET /static/admin/css/responsive.css HTTP/1.1" 200 16565
-[24/Nov/2025 03:13:21] "GET /static/admin/js/theme.js HTTP/1.1" 200 1653
-[24/Nov/2025 03:13:21] "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
-Internal Server Error: /admin/login/
+[24/Nov/2025 04:54:09] "GET /api/sales/invoices/ HTTP/1.1" 200 437
+[24/Nov/2025 04:54:09] "GET /api/sales/clients/ HTTP/1.1" 200 1864
+[24/Nov/2025 04:54:09] "GET /api/sales/contacts/ HTTP/1.1" 200 341
+[24/Nov/2025 04:54:09] "GET /api/sales/orders/ HTTP/1.1" 200 415
+[24/Nov/2025 04:54:09] "GET /api/sales/opportunities/ HTTP/1.1" 200 1268
+[24/Nov/2025 04:54:09] "GET /api/sales/offers/ HTTP/1.1" 200 1390
+[24/Nov/2025 04:54:09] "GET /api/sales/contacts/ HTTP/1.1" 200 341
+[24/Nov/2025 04:54:09] "GET /api/sales/contracts/ HTTP/1.1" 200 359
+[24/Nov/2025 04:54:09] "GET /api/sales/clients/ HTTP/1.1" 200 1864
+[24/Nov/2025 04:54:09] "GET /api/sales/orders/ HTTP/1.1" 200 415
+[24/Nov/2025 04:54:09] "GET /api/sales/invoices/ HTTP/1.1" 200 437
+[24/Nov/2025 04:54:09] "GET /api/sales/opportunities/ HTTP/1.1" 200 1268
+[24/Nov/2025 04:54:09] "GET /api/sales/contracts/ HTTP/1.1" 200 359
+[24/Nov/2025 04:54:09] "GET /api/sales/offers/ HTTP/1.1" 200 1390
+[24/Nov/2025 04:55:41] "OPTIONS /api/sales/offers/d6dcb401-748f-448c-a775-0ba518ad9ef0/ HTTP/1.1" 200 0
+Bad Request: /api/sales/offers/d6dcb401-748f-448c-a775-0ba518ad9ef0/
+[24/Nov/2025 04:55:41] "PATCH /api/sales/offers/d6dcb401-748f-448c-a775-0ba518ad9ef0/ HTTP/1.1" 400 75
+Bad Request: /api/sales/offers/d6dcb401-748f-448c-a775-0ba518ad9ef0/
+[24/Nov/2025 04:55:45] "PATCH /api/sales/offers/d6dcb401-748f-448c-a775-0ba518ad9ef0/ HTTP/1.1" 400 75
+[24/Nov/2025 04:55:50] "DELETE /api/sales/offers/d6dcb401-748f-448c-a775-0ba518ad9ef0/ HTTP/1.1" 204 0
+[24/Nov/2025 04:55:50] "GET /api/sales/opportunities/ HTTP/1.1" 200 1268
+[24/Nov/2025 04:55:50] "GET /api/sales/contacts/ HTTP/1.1" 200 341
+[24/Nov/2025 04:55:50] "GET /api/sales/orders/ HTTP/1.1" 200 415
+[24/Nov/2025 04:55:50] "GET /api/sales/clients/ HTTP/1.1" 200 1864
+[24/Nov/2025 04:55:50] "GET /api/sales/invoices/ HTTP/1.1" 200 437
+[24/Nov/2025 04:55:50] "GET /api/sales/offers/ HTTP/1.1" 200 805
+[24/Nov/2025 04:55:50] "GET /api/sales/contracts/ HTTP/1.1" 200 359
+[24/Nov/2025 04:56:46] "OPTIONS /api/sales/clients/ HTTP/1.1" 200 0
+[24/Nov/2025 04:56:46] "POST /api/sales/clients/ HTTP/1.1" 201 290
+[24/Nov/2025 04:56:46] "GET /api/sales/contacts/ HTTP/1.1" 200 341
+[24/Nov/2025 04:56:46] "GET /api/sales/invoices/ HTTP/1.1" 200 437
+[24/Nov/2025 04:56:46] "GET /api/sales/clients/ HTTP/1.1" 200 2155
+[24/Nov/2025 04:56:46] "GET /api/sales/orders/ HTTP/1.1" 200 415
+[24/Nov/2025 04:56:46] "GET /api/sales/opportunities/ HTTP/1.1" 200 1268
+[24/Nov/2025 04:56:46] "GET /api/sales/offers/ HTTP/1.1" 200 805
+[24/Nov/2025 04:56:46] "GET /api/sales/contracts/ HTTP/1.1" 200 359
+[24/Nov/2025 04:56:54] "OPTIONS /api/sales/clients/68eb59ba-7943-42fa-aa7a-44a653bbccdc/ HTTP/1.1" 200 0
+Internal Server Error: /api/sales/clients/68eb59ba-7943-42fa-aa7a-44a653bbccdc/
 Traceback (most recent call last):
   File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
     return self.cursor.execute(sql, params)
@@ -20,7 +44,7 @@ Traceback (most recent call last):
   File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 360, in execute
     return super().execute(query, params)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-sqlite3.OperationalError: no such table: core_user
+sqlite3.OperationalError: no such table: inventory_ticket
 
 The above exception was the direct cause of the following exception:
 
@@ -31,93 +55,35 @@ Traceback (most recent call last):
   File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
     response = wrapped_callback(request, *callback_args, **callback_kwargs)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/utils/decorators.py", line 48, in _wrapper
-    return bound_method(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/views/decorators/cache.py", line 80, in _view_wrapper
-    response = view_func(request, *args, **kwargs)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/contrib/admin/sites.py", line 449, in login
-    return LoginView.as_view(**defaults)(request)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/views/generic/base.py", line 105, in view
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/rest_framework/viewsets.py", line 125, in view
     return self.dispatch(request, *args, **kwargs)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/utils/decorators.py", line 48, in _wrapper
-    return bound_method(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/utils/decorators.py", line 48, in _wrapper
-    return bound_method(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/views/decorators/debug.py", line 143, in sensitive_post_parameters_wrapper
-    return view(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/utils/decorators.py", line 48, in _wrapper
-    return bound_method(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/utils/decorators.py", line 192, in _view_wrapper
-    result = _process_exception(request, e)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/utils/decorators.py", line 190, in _view_wrapper
-    response = view_func(request, *args, **kwargs)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/utils/decorators.py", line 48, in _wrapper
-    return bound_method(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/views/decorators/cache.py", line 80, in _view_wrapper
-    response = view_func(request, *args, **kwargs)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/contrib/auth/views.py", line 89, in dispatch
-    return super().dispatch(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/views/generic/base.py", line 144, in dispatch
-    return handler(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/views/generic/edit.py", line 150, in post
-    if form.is_valid():
-       ^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/forms/forms.py", line 206, in is_valid
-    return self.is_bound and not self.errors
-                                 ^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/forms/forms.py", line 201, in errors
-    self.full_clean()
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/forms/forms.py", line 338, in full_clean
-    self._clean_form()
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/forms/forms.py", line 354, in _clean_form
-    cleaned_data = self.clean()
-                   ^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/views/decorators/debug.py", line 75, in sensitive_variables_wrapper
-    return func(*func_args, **func_kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/contrib/auth/forms.py", line 366, in clean
-    self.user_cache = authenticate(
-                      ^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/views/decorators/debug.py", line 75, in sensitive_variables_wrapper
-    return func(*func_args, **func_kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/contrib/auth/__init__.py", line 114, in authenticate
-    user = backend.authenticate(request, **credentials)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/contrib/auth/backends.py", line 65, in authenticate
-    user = UserModel._default_manager.get_by_natural_key(username)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/contrib/auth/base_user.py", line 37, in get_by_natural_key
-    return self.get(**{self.model.USERNAME_FIELD: username})
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/models/query.py", line 631, in get
-    num = len(clone)
-          ^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/models/query.py", line 368, in __len__
-    self._fetch_all()
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/models/query.py", line 1954, in _fetch_all
-    self._result_cache = list(self._iterable_class(self))
-                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/models/query.py", line 93, in __iter__
-    results = compiler.execute_sql(
-              ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/rest_framework/mixins.py", line 91, in destroy
+    self.perform_destroy(instance)
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/rest_framework/mixins.py", line 95, in perform_destroy
+    instance.delete()
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/models/base.py", line 1281, in delete
+    return collector.delete()
+           ^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/models/deletion.py", line 467, in delete
+    count = qs._raw_delete(using=self.using)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/models/query.py", line 1223, in _raw_delete
+    return query.get_compiler(using).execute_sql(ROW_COUNT)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
     cursor.execute(sql, params)
   File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 122, in execute
@@ -139,6 +105,16 @@ Traceback (most recent call last):
   File "/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/venv/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 360, in execute
     return super().execute(query, params)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-django.db.utils.OperationalError: no such table: core_user
-[24/Nov/2025 03:13:46] "POST /admin/login/?next=/admin/ HTTP/1.1" 500 253903
-[24/Nov/2025 03:13:50] "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4198
+django.db.utils.OperationalError: no such table: inventory_ticket
+[24/Nov/2025 04:56:54] "DELETE /api/sales/clients/68eb59ba-7943-42fa-aa7a-44a653bbccdc/ HTTP/1.1" 500 157728
+/mnt/c/Users/mirk0/Documents/GitHub/CRM/backend/sales/models.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+November 24, 2025 - 04:54:08
+Django version 5.2.8, using settings 'nexus_crm.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
